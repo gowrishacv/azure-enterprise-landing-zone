@@ -1,6 +1,3 @@
-# azure-enterprise-landing-zone
-Azure Enterprise Landing Zone (IaC with Terraform, Azure CLI, Azure DevOps)
-
 # 🌐 Azure Enterprise Landing Zone (IaC with Terraform, Azure CLI, Azure DevOps)
 
 This repository contains a production-ready skeleton for deploying an **Azure Enterprise Landing Zone** using **Terraform**, **Azure CLI**, and **Azure DevOps Pipelines**. This project is ideal for showcasing your cloud infrastructure and DevOps skills.
