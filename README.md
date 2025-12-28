@@ -1,18 +1,3 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "outDir": "./out-tsc/app",
-    "types": []
-  },
-  "files": [
-    "src/main.ts",
-    "src/polyfills.ts"
-  ],
-  "include": [
-    "src/**/*.d.ts"
-  ]
-}
-
 # Azure Enterprise Landing Zone
 
 Production-ready skeleton for deploying an **Azure Enterprise Landing Zone** with **Terraform**. Governance-first. Modular. CI/CD friendly.
@@ -21,7 +6,7 @@ Production-ready skeleton for deploying an **Azure Enterprise Landing Zone** wit
 
 ```mermaid
 flowchart LR
-  %% 3-column, governance-first landing zone view
+  %% Clean 3-column governance-first design
 
   classDef gov fill:#ecfeff,stroke:#06b6d4,stroke-width:1px,color:#0f172a;
   classDef hub fill:#f0fdf4,stroke:#22c55e,stroke-width:1px,color:#0f172a;
@@ -30,26 +15,26 @@ flowchart LR
 
   subgraph GOV["Governance"]
     direction TB
-    MG["Management groups"]:::gov
-    POL["Policy. initiatives"]:::gov
-    IAM["Entra ID. RBAC. PIM"]:::gov
-    MON["Monitoring plane"]:::obs
+    MG["Management Groups"]:::gov
+    POL["Azure Policy & Initiatives"]:::gov
+    IAM["Entra ID · RBAC · PIM"]:::gov
+    MON["Monitoring Plane"]:::obs
   end
 
-  subgraph HUB["Platform hub"]
+  subgraph HUB["Platform Hub"]
     direction TB
-    HVNET["Hub VNet"]:::hub
-    AFW["Firewall. egress"]:::hub
-    PDNS["Private DNS"]:::hub
-    CONN["VPN. ExpressRoute"]:::hub
-    SHARED["Shared services"]:::hub
+    HVNET["Hub Virtual Network"]:::hub
+    AFW["Azure Firewall (Egress)"]:::hub
+    PDNS["Private DNS Zones"]:::hub
+    CONN["VPN / ExpressRoute"]:::hub
+    SHARED["Shared Services"]:::hub
   end
 
-  subgraph LZ["Landing zones"]
+  subgraph LZ["Landing Zones"]
     direction TB
     SVNET["Spoke VNets"]:::lz
-    APPS["AKS. App Services"]:::lz
-    DATA["Data services"]:::lz
+    APPS["AKS · App Service"]:::lz
+    DATA["Data Services"]:::lz
   end
 
   GOV --> HUB
