@@ -105,7 +105,52 @@ flowchart TB
   linkStyle 3,4 stroke:#111827,stroke-width:2px;
 ```
 
----
+## Governance-first Azure Enterprise Landing Zone
+
+```mermaid
+flowchart TB
+  %% Governance-first Azure Enterprise Landing Zone
+
+  %% ---------- Styles ----------
+  classDef gov fill:#ecfeff,stroke:#06b6d4,stroke-width:1px,color:#111827;
+  classDef repo fill:#eef2ff,stroke:#3b82f6,stroke-width:1px,color:#111827;
+  classDef platform fill:#f0fdf4,stroke:#22c55e,stroke-width:1px,color:#111827;
+  classDef spoke fill:#fff7ed,stroke:#f97316,color:#111827;
+  classDef obs fill:#fdf2f8,stroke:#ec4899,color:#111827;
+  classDef delivery fill:#fefce8,stroke:#eab308,color:#111827;
+
+  subgraph GOV["Tenant Governance"]
+    MG["Management Groups"]
+    POL["Azure Policy"]
+    ENTRA["Entra ID / RBAC / PIM"]
+    MONPLANE["Monitoring Plane"]
+  end
+
+  subgraph HUB["Platform Subscription (Hub)"]
+    HUBVNET["Hub VNet"]
+    FW["Azure Firewall"]
+    DNS["Private DNS"]
+    GW["VPN / ExpressRoute"]
+    SHARED["Shared Services"]
+  end
+
+  subgraph LZ["Landing Zones (Spokes)"]
+    SPOKEVNET["Spoke VNets"]
+    AKS["AKS / App Services"]
+    DATA["Data Services"]
+  end
+
+  GOV --> HUB
+  GOV --> LZ
+  HUB --> SPOKEVNET
+  SPOKEVNET --> AKS
+  SPOKEVNET --> DATA
+
+  class MG,POL,ENTRA gov;
+  class MONPLANE obs;
+  class HUBVNET,FW,DNS,GW,SHARED platform;
+  class SPOKEVNET,AKS,DATA spoke;
+```
 
 ## 📁 Project Structure
 ```
