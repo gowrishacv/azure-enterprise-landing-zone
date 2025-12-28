@@ -1,0 +1,39 @@
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial", "fontSize": "14px", "lineColor": "#94a3b8", "textColor": "#0f172a"}, "flowchart": {"curve": "basis", "nodeSpacing": 40, "rankSpacing": 55, "useMaxWidth": true}}}%%
+flowchart TB
+  %% Platform Hub – Connectivity & shared services (modern styling)
+
+  classDef hub fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#0f172a;
+  classDef net fill:#ffffff,stroke:#cbd5e1,stroke-width:1.5px,color:#0f172a;
+  classDef shared fill:#f8fafc,stroke:#64748b,stroke-width:1.5px,color:#0f172a;
+
+  subgraph HUB["Platform Hub Subscription"]
+    HVNET["Hub Virtual Network"]:::hub
+
+    subgraph CONNECTIVITY["Connectivity"]
+      AFW["Azure Firewall\nEgress Control"]:::net
+      VPN["VPN Gateway"]:::net
+      ER["ExpressRoute"]:::net
+      PDNS["Private DNS Zones"]:::net
+    end
+
+    subgraph SHARED["Shared Services"]
+      KV["Key Vault"]:::shared
+      ACR["Container Registry"]:::shared
+      MON["Log Analytics\nAzure Monitor"]:::shared
+      BASTION["Azure Bastion"]:::shared
+    end
+  end
+
+  style HUB fill:#f0fdf4,stroke:#bbf7d0,stroke-width:1px;
+  style CONNECTIVITY fill:#ffffff,stroke:#e2e8f0,stroke-width:1px;
+  style SHARED fill:#f8fafc,stroke:#e2e8f0,stroke-width:1px;
+
+  linkStyle default stroke:#94a3b8,stroke-width:1.5px;
+
+  HVNET --> AFW
+  HVNET --> PDNS
+  HVNET --> VPN
+  HVNET --> ER
+
+  AFW --> PDNS
+  SHARED --> HVNET

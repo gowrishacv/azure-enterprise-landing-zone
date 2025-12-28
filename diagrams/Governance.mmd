@@ -1,0 +1,52 @@
+%%{init: {"theme": "base", "themeVariables": {"fontFamily": "Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial", "fontSize": "14px", "lineColor": "#94a3b8", "textColor": "#0f172a"}, "flowchart": {"curve": "basis", "nodeSpacing": 40, "rankSpacing": 55, "useMaxWidth": true}}}%%
+flowchart TB
+  %% Governance – Tenant level (modern styling)
+
+  %% Core palette (light, high-contrast)
+  classDef gov fill:#e0f2fe,stroke:#0284c7,stroke-width:2px,color:#0f172a;
+  classDef control fill:#f8fafc,stroke:#64748b,stroke-width:1.5px,color:#0f172a;
+  classDef scope fill:#ffffff,stroke:#cbd5e1,stroke-width:1.5px,color:#0f172a;
+
+  subgraph TENANT["Tenant Governance"]
+    MG["Management Groups"]:::gov
+    ENTRA["Entra ID\nUsers · Groups"]:::gov
+  end
+
+  subgraph CONTROLS["Governance Controls"]
+    POL["Azure Policy\nInitiatives & Assignments"]:::control
+    RBAC["RBAC\nRole Assignments"]:::control
+    PIM["PIM\nJust-in-Time Access"]:::control
+    TAG["Tagging & Naming\nStandards"]:::control
+    DIAG["Diagnostics Baseline\nLogs & Metrics"]:::control
+  end
+
+  subgraph SCOPES["Enforcement Scope"]
+    PLATFORM["Platform Subscriptions"]:::scope
+    LZ["Landing Zone Subscriptions"]:::scope
+    RG["Workload Resource Groups"]:::scope
+  end
+
+  %% Subgraph container styling
+  style TENANT fill:#f0f9ff,stroke:#bae6fd,stroke-width:1px;
+  style CONTROLS fill:#f8fafc,stroke:#e2e8f0,stroke-width:1px;
+  style SCOPES fill:#ffffff,stroke:#e2e8f0,stroke-width:1px;
+
+  %% Link styling
+  linkStyle default stroke:#94a3b8,stroke-width:1.5px;
+
+  MG --> POL
+  MG --> RBAC
+  ENTRA --> RBAC
+  ENTRA --> PIM
+
+  POL --> PLATFORM
+  POL --> LZ
+  RBAC --> PLATFORM
+  RBAC --> LZ
+  TAG --> PLATFORM
+  TAG --> LZ
+  DIAG --> PLATFORM
+  DIAG --> LZ
+
+  PLATFORM --> RG
+  LZ --> RG
