@@ -6,7 +6,7 @@ This repository contains a production-ready skeleton for deploying an **Azure En
 
 ```mermaid
 flowchart TB
-  %% Azure Enterprise Landing Zone. Module driven architecture
+  %% Azure Enterprise Landing Zone. Color-coded architecture
 
   subgraph Repo["Repository. azure-enterprise-landing-zone"]
     CORE["modules/core\nManagement Groups\nSubscriptions\nNaming + baseline resources"]
@@ -24,16 +24,16 @@ flowchart TB
 
   subgraph Platform["Platform Subscription. Hub"]
     HUBVNET["Hub VNet"]
-    FW["Azure Firewall. Egress control"]
+    FW["Azure Firewall\nEgress control"]
     DNS["Private DNS Zones"]
     SHARED["Shared Services\nKey Vault. ACR. Monitor"]
     GW["VPN/ExpressRoute Gateway"]
   end
 
   subgraph LandingZones["Landing Zone Subscriptions. Spokes"]
-    SPOKEVNET["Spoke VNets. Workloads"]
+    SPOKEVNET["Spoke VNets\nWorkloads"]
     PE["Private Endpoints"]
-    AKS["AKS / App Services / Functions"]
+    AKS["AKS. App Service. Functions"]
     DATA["Data Services\nStorage. SQL. Cosmos"]
   end
 
@@ -43,11 +43,12 @@ flowchart TB
   end
 
   subgraph Delivery["Delivery"]
-    CICD["Azure DevOps Pipelines / GitHub Actions"]
+    CICD["Azure DevOps Pipelines\nor GitHub Actions"]
     TF["Terraform\nState backend + workspaces"]
     PLAN["Plan → Apply → Validate"]
   end
 
+  %% Relationships
   CORE --> MG
   IDMOD --> ENTRA
   SECMOD --> POL
@@ -66,16 +67,16 @@ flowchart TB
   HUBVNET --> DNS
   HUBVNET --> SHARED
   HUBVNET --> GW
-  FW -.controlled egress.-> SPOKEVNET
-  DNS -.name resolution.-> PE
+  FW -. controlled egress .-> SPOKEVNET
+  DNS -. name resolution .-> PE
 
   SPOKEVNET --> PE
   SPOKEVNET --> AKS
   SPOKEVNET --> DATA
 
   LA --> AM
-  AM -.signals.-> Platform
-  AM -.signals.-> LandingZones
+  AM -. signals .-> Platform
+  AM -. signals .-> LandingZones
 
   CICD --> PLAN --> TF
   TF --> CORE
@@ -83,6 +84,25 @@ flowchart TB
   TF --> NETMOD
   TF --> SECMOD
   TF --> MONMOD
+
+  %% Styling
+  classDef repo fill:#eef2ff,stroke:#3b82f6,stroke-width:1px,color:#111827;
+  classDef tenant fill:#ecfeff,stroke:#06b6d4,stroke-width:1px,color:#111827;
+  classDef platform fill:#f0fdf4,stroke:#22c55e,stroke-width:1px,color:#111827;
+  classDef spokes fill:#fff7ed,stroke:#f97316,stroke-width:1px,color:#111827;
+  classDef obs fill:#fdf2f8,stroke:#ec4899,stroke-width:1px,color:#111827;
+  classDef delivery fill:#fefce8,stroke:#eab308,stroke-width:1px,color:#111827;
+
+  class CORE,IDMOD,NETMOD,SECMOD,MONMOD repo;
+  class MG,POL,ENTRA tenant;
+  class HUBVNET,FW,DNS,SHARED,GW platform;
+  class SPOKEVNET,PE,AKS,DATA spokes;
+  class LA,AM obs;
+  class CICD,TF,PLAN delivery;
+
+  %% Highlight key flows
+  linkStyle 0,1,2 stroke:#111827,stroke-width:2px;
+  linkStyle 3,4 stroke:#111827,stroke-width:2px;
 ```
 
 ---
@@ -178,8 +198,16 @@ resource "azurerm_virtual_network" "vnet" {
 
 ---
 
-## 📈 Diagram
-![Enterprise Landing Zone](diagrams/enterprise-landing-zone.png)
+## Diagram
+
+The architecture diagram is maintained as Mermaid source.
+
+- Mermaid source: `diagrams/architecture.mmd`
+
+If you want Azure product icons (Bastion, Key Vault, Policy, Firewall, etc.), GitHub Mermaid rendering does not support Azure icon packs directly.
+For an icon-based diagram, export a PNG/SVG from diagrams.net (draw.io) and add it here.
+
+- Icon-based export (optional): `diagrams/enterprise-landing-zone.png`
 
 ---
 

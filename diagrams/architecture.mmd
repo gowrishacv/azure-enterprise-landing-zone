@@ -1,0 +1,85 @@
+flowchart TB
+  %% Azure Enterprise Landing Zone. Module driven architecture
+
+  subgraph Repo["Repository. azure-enterprise-landing-zone"]
+    CORE["modules/core\nManagement Groups\nSubscriptions\nNaming + baseline resources"]
+    IDMOD["modules/identity\nEntra ID groups\nRBAC assignments\nPIM-ready roles"]
+    NETMOD["modules/network\nHub-Spoke VNets\nDNS + Private DNS\nFirewall / Routing"]
+    SECMOD["modules/security\nAzure Policy initiatives\nDefender baselines\nKey Vault guardrails"]
+    MONMOD["modules/monitoring\nLog Analytics\nDiagnostic settings\nAlerts + dashboards"]
+  end
+
+  subgraph Tenant["Azure Tenant"]
+    MG["Management Groups\nPlatform. LandingZones. Sandbox"]
+    POL["Azure Policy + Initiatives\nGuardrails. Compliance"]
+    ENTRA["Entra ID\nGroups. RBAC. PIM"]
+  end
+
+  subgraph Platform["Platform Subscription. Hub"]
+    HUBVNET["Hub VNet"]
+    FW["Azure Firewall. Egress control"]
+    DNS["Private DNS Zones"]
+    SHARED["Shared Services\nKey Vault. ACR. Monitor"]
+    GW["VPN/ExpressRoute Gateway"]
+  end
+
+  subgraph LandingZones["Landing Zone Subscriptions. Spokes"]
+    SPOKEVNET["Spoke VNets. Workloads"]
+    PE["Private Endpoints"]
+    AKS["AKS / App Services / Functions"]
+    DATA["Data Services\nStorage. SQL. Cosmos"]
+  end
+
+  subgraph Observability["Monitoring Plane"]
+    LA["Log Analytics Workspace"]
+    AM["Azure Monitor\nMetrics. Logs. Alerts"]
+  end
+
+  %% Delivery flow
+  subgraph Delivery["Delivery"]
+    CICD["GitHub Actions / Azure DevOps"]
+    TF["Terraform\nState backend + workspaces"]
+    PLAN["Plan → Apply → Validate"]
+  end
+
+  %% Repo modules drive platform + landing zones
+  CORE --> MG
+  IDMOD --> ENTRA
+  SECMOD --> POL
+  NETMOD --> Platform
+  NETMOD --> LandingZones
+  MONMOD --> Observability
+
+  %% Tenant governance applies everywhere
+  MG --> Platform
+  MG --> LandingZones
+  POL --> Platform
+  POL --> LandingZones
+  ENTRA --> Platform
+  ENTRA --> LandingZones
+
+  %% Hub-spoke relationships
+  HUBVNET --> FW
+  HUBVNET --> DNS
+  HUBVNET --> SHARED
+  HUBVNET --> GW
+  FW -.controlled egress.-> SPOKEVNET
+  DNS -.name resolution.-> PE
+
+  %% Workloads
+  SPOKEVNET --> PE
+  SPOKEVNET --> AKS
+  SPOKEVNET --> DATA
+
+  %% Monitoring coverage
+  LA --> AM
+  AM -.signals.-> Platform
+  AM -.signals.-> LandingZones
+
+  %% CI/CD to Terraform to modules
+  CICD --> PLAN --> TF
+  TF --> CORE
+  TF --> IDMOD
+  TF --> NETMOD
+  TF --> SECMOD
+  TF --> MONMOD
