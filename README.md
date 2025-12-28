@@ -1,6 +1,89 @@
 # 🌐 Azure Enterprise Landing Zone (IaC with Terraform, Azure CLI, Azure DevOps)
 
+## Architecture
+
 This repository contains a production-ready skeleton for deploying an **Azure Enterprise Landing Zone** using **Terraform**, **Azure CLI**, and **Azure DevOps Pipelines**. This project is ideal for showcasing your cloud infrastructure and DevOps skills.
+
+```mermaid
+flowchart TB
+  %% Azure Enterprise Landing Zone. Module driven architecture
+
+  subgraph Repo["Repository. azure-enterprise-landing-zone"]
+    CORE["modules/core\nManagement Groups\nSubscriptions\nNaming + baseline resources"]
+    IDMOD["modules/identity\nEntra ID groups\nRBAC assignments\nPIM-ready roles"]
+    NETMOD["modules/network\nHub-Spoke VNets\nDNS + Private DNS\nFirewall / Routing"]
+    SECMOD["modules/security\nAzure Policy initiatives\nDefender baselines\nKey Vault guardrails"]
+    MONMOD["modules/monitoring\nLog Analytics\nDiagnostic settings\nAlerts + dashboards"]
+  end
+
+  subgraph Tenant["Azure Tenant"]
+    MG["Management Groups\nPlatform. LandingZones. Sandbox"]
+    POL["Azure Policy + Initiatives\nGuardrails. Compliance"]
+    ENTRA["Entra ID\nGroups. RBAC. PIM"]
+  end
+
+  subgraph Platform["Platform Subscription. Hub"]
+    HUBVNET["Hub VNet"]
+    FW["Azure Firewall. Egress control"]
+    DNS["Private DNS Zones"]
+    SHARED["Shared Services\nKey Vault. ACR. Monitor"]
+    GW["VPN/ExpressRoute Gateway"]
+  end
+
+  subgraph LandingZones["Landing Zone Subscriptions. Spokes"]
+    SPOKEVNET["Spoke VNets. Workloads"]
+    PE["Private Endpoints"]
+    AKS["AKS / App Services / Functions"]
+    DATA["Data Services\nStorage. SQL. Cosmos"]
+  end
+
+  subgraph Observability["Monitoring Plane"]
+    LA["Log Analytics Workspace"]
+    AM["Azure Monitor\nMetrics. Logs. Alerts"]
+  end
+
+  subgraph Delivery["Delivery"]
+    CICD["Azure DevOps Pipelines / GitHub Actions"]
+    TF["Terraform\nState backend + workspaces"]
+    PLAN["Plan → Apply → Validate"]
+  end
+
+  CORE --> MG
+  IDMOD --> ENTRA
+  SECMOD --> POL
+  NETMOD --> Platform
+  NETMOD --> LandingZones
+  MONMOD --> Observability
+
+  MG --> Platform
+  MG --> LandingZones
+  POL --> Platform
+  POL --> LandingZones
+  ENTRA --> Platform
+  ENTRA --> LandingZones
+
+  HUBVNET --> FW
+  HUBVNET --> DNS
+  HUBVNET --> SHARED
+  HUBVNET --> GW
+  FW -.controlled egress.-> SPOKEVNET
+  DNS -.name resolution.-> PE
+
+  SPOKEVNET --> PE
+  SPOKEVNET --> AKS
+  SPOKEVNET --> DATA
+
+  LA --> AM
+  AM -.signals.-> Platform
+  AM -.signals.-> LandingZones
+
+  CICD --> PLAN --> TF
+  TF --> CORE
+  TF --> IDMOD
+  TF --> NETMOD
+  TF --> SECMOD
+  TF --> MONMOD
+```
 
 ---
 
@@ -17,7 +100,7 @@ azure-enterprise-landing-zone/
 │   ├── dev/                       # Dev environment configuration
 │   └── prod/                      # Prod environment configuration (To-Do)
 ├── diagrams/                      # Architecture diagrams
-│   └── enterprise-landing-zone.png
+│   └── architecture.mmd
 ├── pipelines/                     # Azure DevOps pipelines
 │   └── azure-pipelines.yml
 ├── .gitignore                     # Ignored files
@@ -53,7 +136,7 @@ azure-enterprise-landing-zone/
 
 ### 1. Clone Repository
 ```bash
-git clone https://github.com/gowrisha/azure-enterprise-landing-zone.git
+git clone https://github.com/gowrishacv/azure-enterprise-landing-zone.git
 cd azure-enterprise-landing-zone
 ```
 
