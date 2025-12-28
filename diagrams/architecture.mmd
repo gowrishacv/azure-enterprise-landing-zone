@@ -1,85 +1,103 @@
 flowchart TB
-  %% Azure Enterprise Landing Zone. Module driven architecture
+  %% Governance-first Azure Enterprise Landing Zone
 
-  subgraph Repo["Repository. azure-enterprise-landing-zone"]
-    CORE["modules/core\nManagement Groups\nSubscriptions\nNaming + baseline resources"]
-    IDMOD["modules/identity\nEntra ID groups\nRBAC assignments\nPIM-ready roles"]
-    NETMOD["modules/network\nHub-Spoke VNets\nDNS + Private DNS\nFirewall / Routing"]
-    SECMOD["modules/security\nAzure Policy initiatives\nDefender baselines\nKey Vault guardrails"]
-    MONMOD["modules/monitoring\nLog Analytics\nDiagnostic settings\nAlerts + dashboards"]
-  end
+  %% ---------- Styles ----------
+  classDef gov fill:#ecfeff,stroke:#06b6d4,stroke-width:1px,color:#111827;
+  classDef repo fill:#eef2ff,stroke:#3b82f6,stroke-width:1px,color:#111827;
+  classDef platform fill:#f0fdf4,stroke:#22c55e,stroke-width:1px,color:#111827;
+  classDef spoke fill:#fff7ed,stroke:#f97316,stroke-width:1px,color:#111827;
+  classDef obs fill:#fdf2f8,stroke:#ec4899,stroke-width:1px,color:#111827;
+  classDef delivery fill:#fefce8,stroke:#eab308,stroke-width:1px,color:#111827;
 
-  subgraph Tenant["Azure Tenant"]
+  %% ---------- Governance Layer (Top) ----------
+  subgraph GOV["Tenant Governance. Guardrails first"]
+    direction LR
     MG["Management Groups\nPlatform. LandingZones. Sandbox"]
-    POL["Azure Policy + Initiatives\nGuardrails. Compliance"]
-    ENTRA["Entra ID\nGroups. RBAC. PIM"]
+    POL["Azure Policy + Initiatives\nCompliance. Guardrails"]
+    ENTRA["Entra ID\nRBAC. Groups. PIM"]
+    MONPLANE["Monitoring Plane\nLog Analytics. Azure Monitor"]
   end
 
-  subgraph Platform["Platform Subscription. Hub"]
+  %% ---------- Platform Layer (Hub) ----------
+  subgraph HUB["Platform Subscription. Hub"]
+    direction LR
     HUBVNET["Hub VNet"]
-    FW["Azure Firewall. Egress control"]
+    FW["Azure Firewall\nEgress control"]
     DNS["Private DNS Zones"]
-    SHARED["Shared Services\nKey Vault. ACR. Monitor"]
     GW["VPN/ExpressRoute Gateway"]
+    SHARED["Shared Services\nKey Vault. ACR. Monitor"]
   end
 
-  subgraph LandingZones["Landing Zone Subscriptions. Spokes"]
-    SPOKEVNET["Spoke VNets. Workloads"]
+  %% ---------- Landing Zones (Spokes) ----------
+  subgraph LZ["Landing Zone Subscriptions. Spokes"]
+    direction LR
+    SPOKEVNET["Spoke VNets\nWorkloads"]
     PE["Private Endpoints"]
-    AKS["AKS / App Services / Functions"]
+    AKS["AKS. App Service. Functions"]
     DATA["Data Services\nStorage. SQL. Cosmos"]
   end
 
-  subgraph Observability["Monitoring Plane"]
-    LA["Log Analytics Workspace"]
-    AM["Azure Monitor\nMetrics. Logs. Alerts"]
-  end
-
-  %% Delivery flow
-  subgraph Delivery["Delivery"]
-    CICD["GitHub Actions / Azure DevOps"]
-    TF["Terraform\nState backend + workspaces"]
+  %% ---------- Delivery ----------
+  subgraph DEL["Delivery"]
+    direction LR
+    CICD["Azure DevOps Pipelines / GitHub Actions"]
+    TF["Terraform\nRemote state + workspaces"]
     PLAN["Plan → Apply → Validate"]
   end
 
-  %% Repo modules drive platform + landing zones
-  CORE --> MG
-  IDMOD --> ENTRA
-  SECMOD --> POL
-  NETMOD --> Platform
-  NETMOD --> LandingZones
-  MONMOD --> Observability
+  %% ---------- Repository Modules (Implementation) ----------
+  subgraph REPO["Repository modules. Implementation units"]
+    direction LR
+    CORE["modules/core\nMG + subscriptions\nBaseline resources"]
+    IDMOD["modules/identity\nRBAC assignments\nPIM-ready roles"]
+    NETMOD["modules/network\nHub-spoke\nDNS + routing"]
+    SECMOD["modules/security\nPolicy sets\nDefender baselines"]
+    MONMOD["modules/monitoring\nDiagnostics\nAlerts + dashboards"]
+  end
 
-  %% Tenant governance applies everywhere
-  MG --> Platform
-  MG --> LandingZones
-  POL --> Platform
-  POL --> LandingZones
-  ENTRA --> Platform
-  ENTRA --> LandingZones
+  %% ---------- Governance applies everywhere ----------
+  MG --> HUB
+  MG --> LZ
+  POL --> HUB
+  POL --> LZ
+  ENTRA --> HUB
+  ENTRA --> LZ
+  MONPLANE --> HUB
+  MONPLANE --> LZ
 
-  %% Hub-spoke relationships
+  %% ---------- Hub to Spokes ----------
   HUBVNET --> FW
   HUBVNET --> DNS
-  HUBVNET --> SHARED
   HUBVNET --> GW
-  FW -.controlled egress.-> SPOKEVNET
-  DNS -.name resolution.-> PE
+  HUBVNET --> SHARED
+  FW -. controlled egress .-> SPOKEVNET
+  DNS -. name resolution .-> PE
 
-  %% Workloads
+  %% ---------- Workloads ----------
   SPOKEVNET --> PE
   SPOKEVNET --> AKS
   SPOKEVNET --> DATA
 
-  %% Monitoring coverage
-  LA --> AM
-  AM -.signals.-> Platform
-  AM -.signals.-> LandingZones
-
-  %% CI/CD to Terraform to modules
+  %% ---------- Delivery drives modules ----------
   CICD --> PLAN --> TF
   TF --> CORE
   TF --> IDMOD
   TF --> NETMOD
   TF --> SECMOD
   TF --> MONMOD
+
+  %% ---------- Modules realize governance + platform ----------
+  CORE --> MG
+  IDMOD --> ENTRA
+  SECMOD --> POL
+  MONMOD --> MONPLANE
+  NETMOD --> HUB
+  NETMOD --> LZ
+
+  %% ---------- Apply styles ----------
+  class MG,POL,ENTRA gov;
+  class MONPLANE obs;
+  class HUBVNET,FW,DNS,GW,SHARED platform;
+  class SPOKEVNET,PE,AKS,DATA spoke;
+  class CICD,TF,PLAN delivery;
+  class CORE,IDMOD,NETMOD,SECMOD,MONMOD repo;
