@@ -108,48 +108,45 @@ flowchart TB
 ## Governance-first Azure Enterprise Landing Zone
 
 ```mermaid
-flowchart TB
-  %% Governance-first Azure Enterprise Landing Zone
+flowchart LR
+  %% Compact, governance-first view
 
-  %% ---------- Styles ----------
-  classDef gov fill:#ecfeff,stroke:#06b6d4,stroke-width:1px,color:#111827;
-  classDef repo fill:#eef2ff,stroke:#3b82f6,stroke-width:1px,color:#111827;
-  classDef platform fill:#f0fdf4,stroke:#22c55e,stroke-width:1px,color:#111827;
-  classDef spoke fill:#fff7ed,stroke:#f97316,color:#111827;
-  classDef obs fill:#fdf2f8,stroke:#ec4899,color:#111827;
-  classDef delivery fill:#fefce8,stroke:#eab308,color:#111827;
+  classDef gov fill:#ecfeff,stroke:#06b6d4,stroke-width:1px,color:#0f172a;
+  classDef platform fill:#f0fdf4,stroke:#22c55e,stroke-width:1px,color:#0f172a;
+  classDef lz fill:#fff7ed,stroke:#f97316,stroke-width:1px,color:#0f172a;
+  classDef obs fill:#fdf2f8,stroke:#ec4899,stroke-width:1px,color:#0f172a;
 
-  subgraph GOV["Tenant Governance"]
-    MG["Management Groups"]
-    POL["Azure Policy"]
-    ENTRA["Entra ID / RBAC / PIM"]
-    MONPLANE["Monitoring Plane"]
+  subgraph GOV["Tenant governance"]
+    direction TB
+    MG["Management groups"]:::gov
+    POL["Policy + initiatives"]:::gov
+    IAM["Entra ID. RBAC. PIM"]:::gov
+    MON["Monitoring plane"]:::obs
   end
 
-  subgraph HUB["Platform Subscription (Hub)"]
-    HUBVNET["Hub VNet"]
-    FW["Azure Firewall"]
-    DNS["Private DNS"]
-    GW["VPN / ExpressRoute"]
-    SHARED["Shared Services"]
+  subgraph HUB["Platform subscription. Hub"]
+    direction TB
+    HVNET["Hub VNet"]:::platform
+    AFW["Azure Firewall. Egress"]:::platform
+    PDNS["Private DNS"]:::platform
+    CONN["VPN. ExpressRoute"]:::platform
+    SHARED["Shared services\nKey Vault. ACR. Monitor"]:::platform
   end
 
-  subgraph LZ["Landing Zones (Spokes)"]
-    SPOKEVNET["Spoke VNets"]
-    AKS["AKS / App Services"]
-    DATA["Data Services"]
+  subgraph LZ["Landing zones. Spokes"]
+    direction TB
+    SVNET["Spoke VNets"]:::lz
+    APPS["AKS. App Services"]:::lz
+    DATA["Data services"]:::lz
   end
 
   GOV --> HUB
   GOV --> LZ
-  HUB --> SPOKEVNET
-  SPOKEVNET --> AKS
-  SPOKEVNET --> DATA
-
-  class MG,POL,ENTRA gov;
-  class MONPLANE obs;
-  class HUBVNET,FW,DNS,GW,SHARED platform;
-  class SPOKEVNET,AKS,DATA spoke;
+  HUB --> SVNET
+  SVNET --> APPS
+  SVNET --> DATA
+  MON -. telemetry .-> HUB
+  MON -. telemetry .-> LZ
 ```
 
 ## 📁 Project Structure
